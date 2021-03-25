@@ -100,13 +100,19 @@ export class Player {
 
             if (this._moveForward || this._moveBackward) this._velocity.z -= this._direction.z * 400 * delta;
             if (this._moveLeft || this._moveRight) this._velocity.x -= this._direction.x * 400 * delta
+ 
+            const pastPosition = new THREE.Vector3()
+            pastPosition.copy(this._controls.getObject().position)  
 
             this._controls.moveRight(-this._velocity.x * delta);
             this._controls.moveForward(-this._velocity.z * delta)
 
             this._controls.getObject().position.y += (this._velocity.y * delta);
+            
+
 
             const sphere = new THREE.Sphere(this._controls.getObject().position, 10);
+            const wallSphere = new THREE.Sphere(this._controls.getObject().position, 1)
             const intersections = this._entities.filter((floor: THREE.Mesh) => {
                 const box = new THREE.Box3()
                 floor.geometry.computeBoundingBox()
@@ -114,13 +120,25 @@ export class Player {
                 return sphere.intersectsBox(box);
             })
 
+            const wallIntersections = this._entities.filter((floor: THREE.Mesh) => {
+                const box = new THREE.Box3()
+                floor.geometry.computeBoundingBox()
+                box.copy(floor.geometry.boundingBox).applyMatrix4(floor.matrixWorld)
+                return wallSphere.intersectsBox(box);
+            })
             // if (this._controls.getObject().position.y < 10) {
             if (intersections.length > 0) {
-                const teemo = intersections.filter(inter => inter.name === "teemo")
+                const teemo = intersections.filter(inter => inter.name === "hole")
                 if (teemo.length > 0) {
                     if (teemo[0].position.distanceTo(this._controls.getObject().position) < 19) {
                         return
                     }
+                }
+                const tunnel = wallIntersections.filter(inter => inter.name.includes("wall")) 
+                if (tunnel.length > 0) {
+                    console.log('huh?')
+                    this._controls.getObject().position.copy(pastPosition)
+
                 }
                 this._velocity.y = 0;
                 this._controls.getObject().position.y = intersections[0].position.y + 10
