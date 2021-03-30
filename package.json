@@ -3,14 +3,19 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
+    "homepage": "https://aklevecz.github.io/little-cave",
     "scripts": {
-        "start": "webpack serve --open --port 9999",
+        "start": "webpack serve --open --port 9999 --host 0.0.0.0",
+        "build": "webpack",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d dist",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "devDependencies": {
+        "gh-pages": "^3.1.0",
         "html-webpack-plugin": "^5.3.1",
         "ts-loader": "^8.0.18",
         "typescript": "^4.2.3",
@@ -20,6 +25,8 @@
     },
     "dependencies": {
         "@types/three": "^0.126.1",
+        "css-loader": "^5.2.0",
+        "style-loader": "^2.0.0",
         "three": "^0.126.1"
     }
 }
