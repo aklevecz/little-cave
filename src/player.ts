@@ -1,21 +1,80 @@
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 import { DeviceOrientationControls } from "three/examples/jsm/controls/DeviceOrientationControls";
+import { Vector3 } from "three";
 
 class PlayerControls {
     public controls: PointerLockControls | DeviceOrientationControls;
     public isDevice: boolean;
+    public mobileMoveButton: HTMLButtonElement | null;
+
+    private _camera: THREE.PerspectiveCamera;
+
     constructor(_camera: THREE.PerspectiveCamera, _domElement: HTMLElement) {
         if (window.innerWidth > 768) {
             this.controls = new PointerLockControls(_camera, _domElement);
             document.body.onclick = () => {
                 (this.controls as PointerLockControls).lock();
-            }
+                const overlay = document.querySelector(".overlay")
+                if (overlay) {
+                    overlay.remove()
+                }
+            };
             this.isDevice = false;
+            this._keyboardInstructions()
         } else {
             this.controls = new DeviceOrientationControls(_camera);
             this.isDevice = true;
+            this._createDeviceMoveButton();
+            this._mobileInstructions()
         }
+
+        this._camera = _camera;
+    }
+
+    _keyboardInstructions() {
+        const overlay = document.createElement("div")
+        overlay.className = "overlay"
+        const ps = ["Hello! looks like you are on a laptop!","Use the AWSD keys to move"]
+        ps.forEach(p => {
+            const pel = document.createElement('p')
+            pel.innerText = p
+            overlay.appendChild(pel)
+        })
+
+        document.body.appendChild(overlay)
+    }
+
+    _mobileInstructions() {
+               const overlay = document.createElement("div")
+        overlay.className = "overlay"
+        const ps = ["Hello! looks like you are on a phone!","Move the phone to look around and press the button with the running man to move forward"]
+        ps.forEach(p => {
+            const pel = document.createElement('p')
+            pel.innerText = p
+            overlay.appendChild(pel)
+        })
+
+        document.body.appendChild(overlay)
+    }
+
+    _createDeviceMoveButton() {
+        const button = document.createElement("button");
+        button.style.width = "140px";
+        button.style.height = "140px";
+        button.style.borderRadius = "50%";
+        button.style.background = "#f56d6d";
+        button.style.position = "absolute";
+        button.style.left = "50%";
+        button.style.bottom = "5%";
+        button.style.marginLeft = "-70px";
+        button.style.border = "none";
+        button.id = "mobile-move-button";
+        const image = document.createElement("img");
+        image.src = require("./assets/runner.png");
+        button.appendChild(image);
+        document.body.appendChild(button);
+        this.mobileMoveButton = button;
     }
 
     getObject() {
@@ -36,8 +95,15 @@ class PlayerControls {
 
     moveForward(distance: number) {
         if (this.isDevice) {
-            return ((this
-                .controls as DeviceOrientationControls).object.position.z = distance);
+            const vec = new Vector3();
+            vec.setFromMatrixColumn(this._camera.matrix, 0);
+
+            vec.crossVectors(this._camera.up, vec);
+
+            this._camera.position.addScaledVector(vec, distance);
+            // this._camera.position.z -= distance
+            // return ((this
+            //     .controls as DeviceOrientationControls).object.position.z -= distance);
         } else {
             return (this.controls as PointerLockControls).moveForward(distance);
         }
@@ -46,7 +112,7 @@ class PlayerControls {
     moveRight(distance: number) {
         if (this.isDevice) {
             return ((this
-                .controls as DeviceOrientationControls).object.position.x = distance);
+                .controls as DeviceOrientationControls).object.position.x += distance);
         } else {
             return (this.controls as PointerLockControls).moveRight(distance);
         }
@@ -84,13 +150,35 @@ export class Player {
 
         if (!this._controls.isDevice) {
             _scene.add(this._controls as any);
+            this._keyboardControls();
+        } else {
+            this._mobileMoveControls();
         }
 
-        this._keyboardControls();
         this._entities = _entities;
     }
 
     _init() {}
+
+    _mobileMoveControls() {
+        const onTouchStart = () => {
+            this._moveForward = true;
+            this._controls.mobileMoveButton.style.background = "#6df57d";
+        };
+        const onTouchEnd = () => {
+            this._moveForward = false;
+            this._controls.mobileMoveButton.style.background = "#f5f57c";
+        };
+
+        this._controls.mobileMoveButton.addEventListener(
+            "touchstart",
+            onTouchStart
+        );
+        this._controls.mobileMoveButton.addEventListener(
+            "touchend",
+            onTouchEnd
+        );
+    }
 
     _keyboardControls() {
         const onKeyDown = function (event: KeyboardEvent) {
@@ -151,6 +239,7 @@ export class Player {
     }
 
     Update(delta: number) {
+        const height = 20;
         if (this._controls.isDevice) {
             this._controls.update();
         }
@@ -180,34 +269,36 @@ export class Player {
 
             const sphere = new THREE.Sphere(
                 this._controls.getObject().position,
-                10
+                height
             );
             const wallSphere = new THREE.Sphere(
                 this._controls.getObject().position,
                 1
             );
 
-            const lightFilter = (o: THREE.Mesh) => !o.name.includes("light")
+            const lightFilter = (o: THREE.Mesh) => !o.name.includes("light");
 
-            const intersections = this._entities.filter(lightFilter).filter((floor: THREE.Mesh) => {
-                const box = new THREE.Box3();
-                floor.geometry.computeBoundingBox();
-                box.copy(floor.geometry.boundingBox).applyMatrix4(
-                    floor.matrixWorld
-                );
-                return sphere.intersectsBox(box);
-            });
+            const intersections = this._entities
+                .filter(lightFilter)
+                .filter((floor: THREE.Mesh) => {
+                    const box = new THREE.Box3();
+                    floor.geometry.computeBoundingBox();
+                    box.copy(floor.geometry.boundingBox).applyMatrix4(
+                        floor.matrixWorld
+                    );
+                    return sphere.intersectsBox(box);
+                });
 
-            const wallIntersections = this._entities.filter(lightFilter).filter(
-                (floor: THREE.Mesh) => {
+            const wallIntersections = this._entities
+                .filter(lightFilter)
+                .filter((floor: THREE.Mesh) => {
                     const box = new THREE.Box3();
                     floor.geometry.computeBoundingBox();
                     box.copy(floor.geometry.boundingBox).applyMatrix4(
                         floor.matrixWorld
                     );
                     return wallSphere.intersectsBox(box);
-                }
-            );
+                });
             // if (this._controls.getObject().position.y < 10) {
             if (intersections.length > 0) {
                 const teemo = intersections.filter(
@@ -217,7 +308,8 @@ export class Player {
                     if (
                         teemo[0].position.distanceTo(
                             this._controls.getObject().position
-                        ) < 19
+                        ) <
+                        height + 9
                     ) {
                         return;
                     }
@@ -229,14 +321,16 @@ export class Player {
                     console.log("huh?");
                     this._controls.getObject().position.copy(pastPosition);
                 }
-                
-                const floor = intersections.filter(inter => inter.name.includes("floor"))
-               
+
+                const floor = intersections.filter((inter) =>
+                    inter.name.includes("floor")
+                );
+
                 if (floor.length > 0) {
-                this._velocity.y = 0;
-                this._controls.getObject().position.y =
-                    intersections[0].position.y + 10;
-                this._canJump = true;
+                    this._velocity.y = 0;
+                    this._controls.getObject().position.y =
+                        intersections[0].position.y + height;
+                    this._canJump = true;
                 }
             }
         }

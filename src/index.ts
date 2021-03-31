@@ -47,54 +47,27 @@ class Main {
             0.1,
             1000
         );
-        this._camera.position.z = 4;
-        this._camera.position.y = 200;
+        this._camera.position.z = 400;
+        this._camera.position.y = 500;
 
-        // this._controls = new OrbitControls(this._camera, this._renderer.domElement)
-
-        // floors
-        // var plane = new THREE.Mesh(
-        //     new THREE.PlaneGeometry(100, 100, 10, 10),
-        //     new THREE.MeshStandardMaterial({
-        //         color: 0xFFFFFF,
-        //     }));
-        // plane.castShadow = false;
-        // plane.receiveShadow = true;
-        // plane.rotation.x = -Math.PI / 2;
-        // this._scene.add(plane);
-        // this._entities.push(plane)
-
-        // var plane = new THREE.Mesh(
-        //     new THREE.PlaneGeometry(100, 100, 10, 10),
-        //     new THREE.MeshStandardMaterial({
-        //         color: 0xFFFFFF,
-        //     }));
-        // plane.castShadow = false;
-        // plane.receiveShadow = true;
-        // plane.rotation.x = -Math.PI / 2;
-        // plane.position.x = 0;
-        // plane.position.y = -100;
-        // this._scene.add(plane);
-        // this._entities.push(plane)
-        const geometry = new THREE.SphereGeometry(500, 60, 40);
-
-        const texture = new THREE.TextureLoader().load(require("./equi.jpg"));
+        const texture = new THREE.TextureLoader().load(
+            require("./assets/bg.jpg")
+        );
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        texture.encoding = THREE.sRGBEncoding;
         this._scene.background = texture;
-        // const material = new THREE.MeshBasicMaterial({ map: texture });
-        // const mesh = new THREE.Mesh(geometry, material);
-        //      geometry.scale(-1, 1, 1);
 
-        // this._scene.add(mesh);
-        // imported floors
-        const texture2 = new THREE.TextureLoader().load(require("./equi.jpg"));
+        const texture2 = new THREE.TextureLoader().load(
+            require("./assets/bg.jpg")
+        );
         texture2.format = THREE.RGBFormat;
         texture2.mapping = THREE.EquirectangularReflectionMapping;
 
         const asphalt = new THREE.TextureLoader().load(
-            require("./asphalt.jpg")
+            require("./assets/asphalt.jpg")
         );
         const loader = new GLTFLoader();
-        loader.load(require("./scene.glb"), (gltf) => {
+        loader.load(require("./assets/lil-cave.glb"), (gltf) => {
             this._scene.add(gltf.scene);
 
             gltf.scene.children.map((c: THREE.Mesh) => {
@@ -108,25 +81,23 @@ class Main {
                     (c.material as any).map = asphalt;
                     console.log(c.material);
                 }
+                console.log(c.name);
+                if (c.name === "comeback") {
+                    console.log("jim");
+                    const alphaMap = new THREE.TextureLoader().load(
+                        require("./assets/come-back-soon2.png")
+                    ) as any;
+                    (c.material as any).alphaMap = alphaMap;
+                    (c.material as any).transparent = true;
+                }
 
                 this._entities.push(c);
                 this._sceneLoaded = true;
             });
         });
-        //**floors */
 
         const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
         this._scene.add(light);
-
-        // const sphere = new THREE.Mesh(
-        //     new THREE.SphereGeometry(10),
-        //     new THREE.MeshBasicMaterial({ color: "black" })
-        // );
-        // sphere.position.x = -30;
-        // sphere.position.y = -9;
-        // sphere.name = "teemo";
-        // this._scene.add(sphere);
-        // this._entities.push(sphere);
 
         document.body.appendChild(this._renderer.domElement);
     }
@@ -154,7 +125,7 @@ class Main {
     }
 }
 const button = document.createElement("button");
-button.innerText = "Start";
+button.innerText = "Enter";
 button.className = "start-button";
 document.body.appendChild(button);
 button.onclick = () => {

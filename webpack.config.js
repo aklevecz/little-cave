@@ -5,7 +5,7 @@ module.exports = {
     entry: "./src/index.ts",
     mode: "development",
     output: {
-        filename: "[name].bundle.js",
+        filename: "[hash].bundle.js",
         path: path.resolve(__dirname, "dist"),
         clean: true,
     },

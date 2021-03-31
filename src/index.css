@@ -16,3 +16,26 @@ body {
     margin-top: -50px;
     cursor: pointer;
 }
+
+.overlay {
+    font-family: monospace;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    padding: 50px;
+    box-sizing: border-box;
+    color: black;
+    background: white;
+    opacity: .5;
+}
+
+.overlay p {
+    width: 80%;
+}
