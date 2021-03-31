@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin")
 
 module.exports = {
     entry: "./src/index.ts",
-    mode: "development",
+    mode: "production",
     output: {
         filename: "[hash].bundle.js",
         path: path.resolve(__dirname, "dist"),
@@ -30,7 +30,10 @@ module.exports = {
         extensions: [".ts", ".js"],
     },
     plugins: [
-        new HtmlWebpackPlugin()
+        new HtmlWebpackPlugin({
+            title: "SFHC",
+            favicon:"./favi.jpg"
+        })
     ],
     devtool: "inline-source-map",
     devServer: {

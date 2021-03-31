@@ -41,6 +41,10 @@ class PlayerControls {
             pel.innerText = p
             overlay.appendChild(pel)
         })
+        const button = document.createElement("button")
+        button.innerText = "Click to Continue!"
+        button.className = "instructions"
+        overlay.appendChild(button)
 
         document.body.appendChild(overlay)
     }
@@ -54,7 +58,7 @@ class PlayerControls {
             pel.innerText = p
             overlay.appendChild(pel)
         })
-
+        overlay.ontouchstart = () => overlay.remove()
         document.body.appendChild(overlay)
     }
 
@@ -72,6 +76,9 @@ class PlayerControls {
         button.id = "mobile-move-button";
         const image = document.createElement("img");
         image.src = require("./assets/runner.png");
+        button.style.userSelect = "none"
+        button.oncontextmenu= () => false
+
         button.appendChild(image);
         document.body.appendChild(button);
         this.mobileMoveButton = button;
