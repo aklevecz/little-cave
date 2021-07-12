@@ -45,10 +45,10 @@ button {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
-    user-select: none; /* standerd */
-    -moz-user-select: none; /* firefox specific */
-    -webkit-user-select: none; /* Chrome, Opera and Safari*/
-    -ms-user-select: none; /* IE, ms-edge */
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 }
 
 .instructions {
